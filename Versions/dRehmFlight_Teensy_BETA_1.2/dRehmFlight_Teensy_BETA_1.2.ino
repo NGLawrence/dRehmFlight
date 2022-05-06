@@ -159,8 +159,10 @@ unsigned long channel_1_fs = 1000; //thro
 unsigned long channel_2_fs = 1500; //ail
 unsigned long channel_3_fs = 1500; //elev
 unsigned long channel_4_fs = 1500; //rudd
-unsigned long channel_5_fs = 2000; //gear, greater than 1500 = throttle cut
-unsigned long channel_6_fs = 2000; //aux1
+unsigned long channel_5_fs = 2000; //aux1
+unsigned long channel_6_fs = 2000; //aux2
+unsigned long channel_7_fs = 2000; //aux3
+unsigned long channel_8_fs = 2000; //aux4
 
 //Filter parameters - Defaults tuned for 2kHz loop rate; Do not touch unless you know what you are doing:
 float B_madgwick = 0.04;  //Madgwick filter parameter
@@ -211,12 +213,14 @@ float Kd_yaw = 0.00015;       //Yaw D-gain (be careful when increasing too high,
 //NOTE: Pin 13 is reserved for onboard LED, pins 18 and 19 are reserved for the MPU6050 IMU for default setup
 //Radio:
 //Note: If using SBUS, connect to pin 21 (RX5)
-const int ch1Pin = 15; //throttle
-const int ch2Pin = 16; //ail
-const int ch3Pin = 17; //ele
+const int ch1Pin = 23; //throttle
+const int ch2Pin = 22; //ail
+const int ch3Pin = 21; //ele
 const int ch4Pin = 20; //rudd
-const int ch5Pin = 21; //gear (throttle cut)
-const int ch6Pin = 22; //aux1 (free aux channel)
+const int ch5Pin = 17; //aux1
+const int ch6Pin = 16; //aux2 (free aux channel)
+const int ch7Pin = 15; //aux3
+const int ch8Pin = 14; //aux4
 const int PPM_Pin = 23;
 //OneShot125 ESC pin outputs:
 const int m1Pin = 0;
@@ -226,20 +230,20 @@ const int m4Pin = 3;
 const int m5Pin = 4;
 const int m6Pin = 5;
 //PWM servo or ESC outputs:
-const int servo1Pin = 6;
-const int servo2Pin = 7;
-const int servo3Pin = 8;
-const int servo4Pin = 9;
-const int servo5Pin = 10;
-const int servo6Pin = 11;
-const int servo7Pin = 12;
+const int servo1Pin = 3;
+const int servo2Pin = 4;
+const int servo3Pin = 5;
+const int servo4Pin = 6;
+// const int servo5Pin = 10;
+// const int servo6Pin = 11;
+// const int servo7Pin = 12;
 PWMServo servo1;  //create servo object to control a servo or ESC with PWM
 PWMServo servo2;
 PWMServo servo3;
 PWMServo servo4;
-PWMServo servo5;
-PWMServo servo6;
-PWMServo servo7;
+// PWMServo servo5;
+// PWMServo servo6;
+// PWMServo servo7;
 
 
 
@@ -257,7 +261,7 @@ unsigned long blink_counter, blink_delay;
 bool blinkAlternate;
 
 //Radio comm:
-unsigned long channel_1_pwm, channel_2_pwm, channel_3_pwm, channel_4_pwm, channel_5_pwm, channel_6_pwm;
+unsigned long channel_1_pwm, channel_2_pwm, channel_3_pwm, channel_4_pwm, channel_5_pwm, channel_6_pwm, channel_7_pwm, channel_8_pwm;
 unsigned long channel_1_pwm_prev, channel_2_pwm_prev, channel_3_pwm_prev, channel_4_pwm_prev;
 
 #if defined USE_SBUS_RX
@@ -319,9 +323,9 @@ void setup() {
   servo2.attach(servo2Pin, 900, 2100);
   servo3.attach(servo3Pin, 900, 2100);
   servo4.attach(servo4Pin, 900, 2100);
-  servo5.attach(servo5Pin, 900, 2100);
-  servo6.attach(servo6Pin, 900, 2100);
-  servo7.attach(servo7Pin, 900, 2100);
+  // servo5.attach(servo5Pin, 900, 2100);
+  // servo6.attach(servo6Pin, 900, 2100);
+  // servo7.attach(servo7Pin, 900, 2100);
 
   //Set built in LED to turn on to signal startup & not to disturb vehicle during IMU calibration
   digitalWrite(13, HIGH);
@@ -338,6 +342,8 @@ void setup() {
   channel_4_pwm = channel_4_fs;
   channel_5_pwm = channel_5_fs;
   channel_6_pwm = channel_6_fs;
+  channel_7_pwm = channel_7_fs;
+  channel_8_pwm = channel_8_fs;
 
   //Initialize IMU communication
   IMUinit();
@@ -354,20 +360,20 @@ void setup() {
   servo2.write(0);
   servo3.write(0);
   servo4.write(0);
-  servo5.write(0);
-  servo6.write(0);
-  servo7.write(0);
+  // servo5.write(0);
+  // servo6.write(0);
+  // servo7.write(0);
   
   delay(10);
 
   //Arm OneShot125 motors
-  m1_command_PWM = 125; //command OneShot125 ESC from 125 to 250us pulse length
-  m2_command_PWM = 125;
-  m3_command_PWM = 125;
-  m4_command_PWM = 125;
-  m5_command_PWM = 125;
-  m6_command_PWM = 125;
-  commandMotors();
+  // m1_command_PWM = 125; //command OneShot125 ESC from 125 to 250us pulse length
+  // m2_command_PWM = 125;
+  // m3_command_PWM = 125;
+  // m4_command_PWM = 125;
+  // m5_command_PWM = 125;
+  // m6_command_PWM = 125;
+  // commandMotors();
   
   delay(100);
 
@@ -432,9 +438,9 @@ void loop() {
   servo2.write(s2_command_PWM);
   servo3.write(s3_command_PWM);
   servo4.write(s4_command_PWM);
-  servo5.write(s5_command_PWM);
-  servo6.write(s6_command_PWM);
-  servo7.write(s7_command_PWM);
+  // servo5.write(s5_command_PWM);
+  // servo6.write(s6_command_PWM);
+  // servo7.write(s7_command_PWM);
     
   //Get vehicle commands for next loop iteration
   getCommands(); //pulls current available radio commands

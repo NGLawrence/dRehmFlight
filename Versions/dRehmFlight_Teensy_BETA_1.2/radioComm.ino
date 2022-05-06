@@ -7,8 +7,8 @@
 
 //This file contains all necessary functions and code used for radio communication to avoid cluttering the main code
 
-unsigned long rising_edge_start_1, rising_edge_start_2, rising_edge_start_3, rising_edge_start_4, rising_edge_start_5, rising_edge_start_6; 
-unsigned long channel_1_raw, channel_2_raw, channel_3_raw, channel_4_raw, channel_5_raw, channel_6_raw;
+unsigned long rising_edge_start_1, rising_edge_start_2, rising_edge_start_3, rising_edge_start_4, rising_edge_start_5, rising_edge_start_6, rising_edge_start_7, rising_edge_start_8; 
+unsigned long channel_1_raw, channel_2_raw, channel_3_raw, channel_4_raw, channel_5_raw, channel_6_raw, channel_7_raw, channel_8_raw;
 int ppm_counter = 0;
 unsigned long time_ms = 0;
 
@@ -30,6 +30,8 @@ void radioSetup() {
     pinMode(ch4Pin, INPUT_PULLUP);
     pinMode(ch5Pin, INPUT_PULLUP);
     pinMode(ch6Pin, INPUT_PULLUP);
+    pinMode(ch7Pin, INPUT_PULLUP);
+    pinMode(ch8Pin, INPUT_PULLUP);
     delay(20);
     //Attach interrupt and point to corresponding ISR functions
     attachInterrupt(digitalPinToInterrupt(ch1Pin), getCh1, CHANGE);
@@ -38,6 +40,8 @@ void radioSetup() {
     attachInterrupt(digitalPinToInterrupt(ch4Pin), getCh4, CHANGE);
     attachInterrupt(digitalPinToInterrupt(ch5Pin), getCh5, CHANGE);
     attachInterrupt(digitalPinToInterrupt(ch6Pin), getCh6, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(ch7Pin), getCh7, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(ch8Pin), getCh8, CHANGE);
     delay(20);
 
   //SBUS Recevier 
@@ -53,14 +57,20 @@ unsigned long getRadioPWM(int ch_num) {
   //DESCRIPTION: Get current radio commands from interrupt routines 
   unsigned long returnPWM;
   
+  // R8EF has diffect channel numbers mapped to controls
+  // Ch1 is Aileron
+  // Ch2 is Elevator
+  // Ch3 is Throttle
+  // Ch4 is Rudder
+
   if (ch_num == 1) {
-    returnPWM = channel_1_raw;
+    returnPWM = channel_3_raw;
   }
   else if (ch_num == 2) {
-    returnPWM = channel_2_raw;
+    returnPWM = channel_1_raw;
   }
   else if (ch_num == 3) {
-    returnPWM = channel_3_raw;
+    returnPWM = channel_2_raw;
   }
   else if (ch_num == 4) {
     returnPWM = channel_4_raw;
@@ -71,7 +81,12 @@ unsigned long getRadioPWM(int ch_num) {
   else if (ch_num == 6) {
     returnPWM = channel_6_raw;
   }
-  
+  else if (ch_num == 7) {
+    returnPWM = channel_7_raw;
+  }
+  else if (ch_num == 8) {
+    returnPWM = channel_8_raw;
+  }
   return returnPWM;
 }
 
@@ -117,6 +132,14 @@ void getPPM() {
   
     if (ppm_counter == 6) { //sixth pulse
       channel_6_raw = dt_ppm;
+    }
+
+    if (ppm_counter == 7) { //seventh pulse
+      channel_7_raw = dt_ppm;
+    }
+
+    if (ppm_counter == 8) { //eighth pulse
+      channel_8_raw = dt_ppm;
     }
     
     ppm_counter = ppm_counter + 1;
@@ -180,5 +203,25 @@ void getCh6() {
   }
   else if(trigger == 0) {
     channel_6_raw = micros() - rising_edge_start_6;
+  }
+}
+
+void getCh7() {
+  int trigger = digitalRead(ch7Pin);
+  if(trigger == 1) {
+    rising_edge_start_7 = micros();
+  }
+  else if(trigger == 0) {
+    channel_7_raw = micros() - rising_edge_start_7;
+  }
+}
+
+void getCh8() {
+  int trigger = digitalRead(ch8Pin);
+  if(trigger == 1) {
+    rising_edge_start_8 = micros();
+  }
+  else if(trigger == 0) {
+    channel_8_raw = micros() - rising_edge_start_8;
   }
 }
