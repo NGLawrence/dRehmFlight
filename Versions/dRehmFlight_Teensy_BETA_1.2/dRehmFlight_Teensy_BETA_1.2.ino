@@ -218,7 +218,7 @@ const int ch2Pin = 22; //ail
 const int ch3Pin = 21; //ele
 const int ch4Pin = 20; //rudd
 const int ch5Pin = 17; //aux1
-const int ch6Pin = 16; //aux2 (free aux channel)
+const int ch6Pin = 16; //aux2
 const int ch7Pin = 15; //aux3
 const int ch8Pin = 14; //aux4
 const int PPM_Pin = 23;
@@ -410,7 +410,7 @@ void loop() {
   //printRollPitchYaw();  //prints roll, pitch, and yaw angles in degrees from Madgwick filter (expected: degrees, 0 when level)
   //printPIDoutput();     //prints computed stabilized PID variables from controller and desired setpoint (expected: ~ -1 to 1)
   //printMotorCommands(); //prints the values being written to the motors (expected: 120 to 250)
-  //printServoCommands(); //prints the values being written to the servos (expected: 0 to 180)
+  printServoCommands(); //prints the values being written to the servos (expected: 0 to 180)
   //printLoopRate();      //prints the time between loops in microseconds (expected: microseconds between loop iterations)
 
   //Get vehicle state
@@ -1063,10 +1063,10 @@ void controlMixer() {
   m6_command_scaled = 0;
 
   //0.5 is centered servo, 0 is zero throttle if connecting to ESC for conventional PWM, 1 is max throttle
-  s1_command_scaled = 0;
-  s2_command_scaled = 0;
-  s3_command_scaled = 0;
-  s4_command_scaled = 0;
+  s1_command_scaled = thro_des - pitch_PID + roll_PID + yaw_PID;
+  s2_command_scaled = thro_des - pitch_PID - roll_PID - yaw_PID;
+  s3_command_scaled = thro_des + pitch_PID - roll_PID + yaw_PID;
+  s4_command_scaled = thro_des + pitch_PID + roll_PID - yaw_PID;
   s5_command_scaled = 0;
   s6_command_scaled = 0;
   s7_command_scaled = 0;
@@ -1444,6 +1444,10 @@ void printRadioData() {
     Serial.print(channel_5_pwm);
     Serial.print(F(" CH6: "));
     Serial.println(channel_6_pwm);
+    Serial.print(F(" CH7: "));
+    Serial.print(channel_7_pwm);
+    Serial.print(F(" CH8: "));
+    Serial.println(channel_8_pwm);
   }
 }
 
@@ -1556,6 +1560,20 @@ void printServoCommands() {
     Serial.print(s6_command_PWM);
     Serial.print(F(" s7_command: "));
     Serial.println(s7_command_PWM);
+  }
+}
+
+void printServoCommandsScaled() {
+    if (current_time - print_counter > 10000) {
+    print_counter = micros();
+    Serial.print(F("s1_command: "));
+    Serial.print(s1_command_scaled);
+    Serial.print(F(" s2_command: "));
+    Serial.print(s2_command_scaled);
+    Serial.print(F(" s3_command: "));
+    Serial.print(s3_command_scaled);
+    Serial.print(F(" s4_command: "));
+    Serial.println(s4_command_scaled);
   }
 }
 
